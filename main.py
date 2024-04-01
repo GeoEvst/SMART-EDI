@@ -1,3 +1,4 @@
+# Привет от Никитина
 import copy
 from tkinter import *
 from tkinter import ttk

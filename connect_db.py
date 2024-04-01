@@ -15,5 +15,5 @@ def show_flows(data):
 
 def preparing_data(data):
      for i in data:
-          flow_gtoup = i[-1]
+         flow_gtoup = i[-1]
 

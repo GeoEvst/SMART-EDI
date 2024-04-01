@@ -1,4 +1,3 @@
-# Привет от Никитина
 import copy
 from tkinter import *
 from tkinter import ttk
@@ -10,7 +9,7 @@ import datetime
 import sys
 import os
 import api_kontur
-
+import connect_db
 
 # Параметры окна
 root = Tk()
@@ -43,6 +42,18 @@ data_field_guid = {}
 data_compbox_guid = {}
 data_compbox_name = {}
 data_provider_name = {}
+data_entity_0 = {}
+data_entity_1 = {}
+data_entity_2 = {}
+data_entity_3 = {}
+data_entity_4 = {}
+data_entity_5 = {}
+data_entity_6 = {}
+data_entity_7 = {}
+data_entity_8 = {}
+data_entity_9 = {}
+all_entity = [data_entity_0, data_entity_1, data_entity_2, data_entity_3, data_entity_4, data_entity_5,
+              data_entity_6, data_entity_7, data_entity_8, data_entity_9]
 parameters_field = [data_field_lable, data_field_title, data_field_inn, data_field_kpp, data_field_gln, data_field_guid]
 parameters_checkbox = [data_field_is_active_ka, data_field_is_headoff]
 parameters_compbox = [data_compbox_guid]
@@ -64,8 +75,8 @@ def open_file():
             parse_file = parse_file[1:]
             y = formation_of_fields(parse_file)
             csvfile.close()
-    canvas.create_window(10, y + 30, anchor=NW, window=request_guid)
-    canvas.create_window(110, y + 30, anchor=NW, window=get_all)
+    canvas.create_window(10, y + 10, anchor=NW, window=request_guid)
+    canvas.create_window(110, y + 10, anchor=NW, window=get_all)
     open_file_btn.configure(state='disabled')
 
 
@@ -117,8 +128,8 @@ def display_to_checkbox(name, x, y, state):
 # Формирование всех виджетов
 def formation_of_fields(parse_file):
     global y
+    y = 80
     for i in range(len(parse_file)):
-        y = 30 + (i + 1) * 50
         data_field_title[f'title{i}'] = display_to_fields(f'Наименование {i + 1}', 10, y, parse_file[i][1])
         data_field_inn[f'inn{i}'] = display_to_fields(f'ИНН {i + 1}', 150, y, parse_file[i][0])
         data_field_kpp[f'kpp{i}'] = display_to_fields(f'КПП {i + 1}', 290, y)
@@ -131,6 +142,17 @@ def formation_of_fields(parse_file):
         data_compbox_guid[f'guid{i}'][1].bind("<<ComboboxSelected>>", selected)
         data_compbox_name[f'guid{i}'] = display_to_label(f'GUID{i + 1}', 835, y + 9)
         data_provider_name[f'prov_name{i}'] = display_to_label(f'{i + 1}', 1280, y + 30)
+        data_entity_0[f'name{i}'] = display_to_checkbox(f'Ашан {i + 1}', 10, y + 30, 0)
+        data_entity_1[f'name{i}'] = display_to_checkbox(f'Атак {i + 1}', 90, y + 30, 0)
+        data_entity_2[f'name{i}'] = display_to_checkbox(f'Ашан Тех {i + 1}', 160, y + 30, 0)
+        data_entity_3[f'name{i}'] = display_to_checkbox(f'Ашан Флай {i + 1}', 260, y + 30, 0)
+        data_entity_4[f'name{i}'] = display_to_checkbox(f'Флай Сибирь {i + 1}', 370, y + 30, 0)
+        data_entity_5[f'name{i}'] = display_to_checkbox(f'Флай Импорт {i + 1}', 490, y + 30, 0)
+        data_entity_6[f'name{i}'] = display_to_checkbox(f'Филье {i + 1}', 610, y + 30, 0)
+        data_entity_7[f'name{i}'] = display_to_checkbox(f'Хладокомбинат {i + 1}', 690, y + 30, 0)
+        data_entity_8[f'name{i}'] = display_to_checkbox(f'РПК {i + 1}', 820, y + 30, 0)
+        data_entity_9[f'name{i}'] = display_to_checkbox(f'ЭЛМ Строй {i + 1}', 890, y + 30, 0)
+        y = 80 + (i + 1) * 90
         canvas.config(scrollregion=(0, 0, 10, y + 50))
     return y
 
@@ -167,7 +189,33 @@ def get_all():
     for i in range(cnt):
         data_all.append([data_title_list[i], data_inn_list[i], data_kpp_list[i], data_gln_list[i],
                          data_field_is_active_ka_list[i], data_field_is_headoff_list[i], data_compbox_guid_list[i]])
-    print(data_all)
+
+    flow_groups = get_flows()
+    for i in range(len(data_all)):
+        data_all[i].append(flow_groups[i])
+    connect_db.show_flows(data_all)
+
+
+def get_flows():
+    entity_names = ['Ашан', 'Атак', 'Ашан Тех', 'Ашан Флай', 'Флай Сибирь', 'Флай Импорт',
+                    'Филье', 'Хладокомбинат', 'РПК', 'ЭЛМ Строй']
+    entity = {}
+    for i in range(len(all_entity)):
+        entity_list = []
+        for field_name, field_link in all_entity[i].items():
+            entity_list.append(bool(field_link[0].get()))
+        entity[entity_names[i]] = entity_list
+
+    keys = list(entity.keys())
+    length = len(entity['Ашан'])
+    flow_groups = []
+    for i in range(length):
+        prom_list = []
+        for j in keys:
+            prom_list.append(entity[j][i])
+        flow_groups.append(prom_list)
+    return flow_groups
+
 
 
 # Запрос guid по API

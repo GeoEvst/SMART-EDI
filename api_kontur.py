@@ -11,7 +11,6 @@ Gravitee_Api_Key = config('X-Gravitee-Api-Key', default='')
 login = config('login', default='')
 password = config('password', default='')
 
-print(ddauth_api_client_id, Gravitee_Api_Key, login, password)
 def authorization():
   conn = http.client.HTTPSConnection("api-ext.ru.auchan.com")
   payload = json.dumps({
@@ -74,7 +73,6 @@ def get_organization(token, inn, kpp=''):
     res = conn.getresponse()
     data = res.read()
     json_data = json.loads(data.decode("utf-8"))
-    print(json_data)
   except:
     json_data = {'Organizations':[]}
   return json_data

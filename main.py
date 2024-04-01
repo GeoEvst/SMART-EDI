@@ -1,10 +1,12 @@
-import connect_db
+import copy
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 import csv
 from tkinter.messagebox import showinfo, askyesno
 import re
+import datetime
+import sys
 import os
 import api_kontur
 
@@ -36,24 +38,12 @@ data_field_kpp = {}
 data_field_gln = {}
 data_field_is_active_ka = {}
 data_field_is_headoff = {}
-data_field_org_1 = {}
-data_field_org_2 = {}
-data_field_org_3 = {}
-data_field_org_4 = {}
-data_field_org_5 = {}
-data_field_org_6 = {}
-data_field_org_7 = {}
-data_field_org_8 = {}
-data_field_org_9 = {}
-data_field_org_10 = {}
 data_field_guid = {}
 data_compbox_guid = {}
 data_compbox_name = {}
 data_provider_name = {}
 parameters_field = [data_field_lable, data_field_title, data_field_inn, data_field_kpp, data_field_gln, data_field_guid]
 parameters_checkbox = [data_field_is_active_ka, data_field_is_headoff]
-parameters_org = [data_field_org_1, data_field_org_2, data_field_org_3, data_field_org_4, data_field_org_5,
-                  data_field_org_6, data_field_org_7, data_field_org_8, data_field_org_9, data_field_org_10]
 parameters_compbox = [data_compbox_guid]
 parameters_label = [data_compbox_name, data_provider_name]
 provider_no_list = (('1', '2BM', 'Контур Диадок'), ('2', '2BK', 'КОРУС Консалтинг'), ('3', '2LD', 'E-COM Докробот'), ('4', '2JM', 'СИСЛИНК (DOCLINK)'), ('5', '2BE', 'Тензор СБИС'), ('6', '2IJ', 'Эдисофт'),
@@ -126,8 +116,8 @@ def display_to_checkbox(name, x, y, state):
 # Формирование всех виджетов
 def formation_of_fields(parse_file):
     global y
-    y = 80
     for i in range(len(parse_file)):
+        y = 30 + (i + 1) * 50
         data_field_title[f'title{i}'] = display_to_fields(f'Наименование {i + 1}', 10, y, parse_file[i][1])
         data_field_inn[f'inn{i}'] = display_to_fields(f'ИНН {i + 1}', 150, y, parse_file[i][0])
         data_field_kpp[f'kpp{i}'] = display_to_fields(f'КПП {i + 1}', 290, y)
@@ -140,17 +130,6 @@ def formation_of_fields(parse_file):
         data_compbox_guid[f'guid{i}'][1].bind("<<ComboboxSelected>>", selected)
         data_compbox_name[f'guid{i}'] = display_to_label(f'GUID{i + 1}', 835, y + 9)
         data_provider_name[f'prov_name{i}'] = display_to_label(f'{i + 1}', 1280, y + 30)
-        data_field_org_1[f'org{i}'] = display_to_checkbox(f'Ашан {i + 1}', 10, y + 30, 0)
-        data_field_org_2[f'org{i}'] = display_to_checkbox(f'Атак {i + 1}', 85, y + 30, 0)
-        data_field_org_3[f'org{i}'] = display_to_checkbox(f'Ашан Тех {i + 1}', 155, y + 30, 0)
-        data_field_org_4[f'org{i}'] = display_to_checkbox(f'Ашан Флай {i + 1}', 250, y + 30, 0)
-        data_field_org_5[f'org{i}'] = display_to_checkbox(f'Флай сибирь {i + 1}', 355, y + 30, 0)
-        data_field_org_6[f'org{i}'] = display_to_checkbox(f'Флай импорт {i + 1}', 470, y + 30, 0)
-        data_field_org_7[f'org{i}'] = display_to_checkbox(f'Филье {i + 1}', 590, y + 30, 0)
-        data_field_org_8[f'org{i}'] = display_to_checkbox(f'Хладокомбинат {i + 1}', 670, y + 30, 0)
-        data_field_org_9[f'org{i}'] = display_to_checkbox(f'РПК {i + 1}', 800, y + 30, 0)
-        data_field_org_10[f'org{i}'] = display_to_checkbox(f'ЭЛМ строй {i + 1}', 865, y + 30, 0)
-        y = 80 + (i + 1) * 90
         canvas.config(scrollregion=(0, 0, 10, y + 50))
     return y
 
@@ -187,35 +166,7 @@ def get_all():
     for i in range(cnt):
         data_all.append([data_title_list[i], data_inn_list[i], data_kpp_list[i], data_gln_list[i],
                          data_field_is_active_ka_list[i], data_field_is_headoff_list[i], data_compbox_guid_list[i]])
-    flow_groups = get_flows()
-    for i in range(len(data_all)):
-        data_all[i].append(flow_groups[i])
-    select_flows = connect_db.show_flows(data_all)
-    text_select_flows = ''
-    for i in select_flows:
-        text_select_flows += str(i) + '\n'
-    showinfo('Потоки', text_select_flows)
-
-
-# Получение и развертка данных по потокам
-def get_flows():
-    entity = {}
-    entity_names = ['Ашан', 'Атак', 'Ашан Тех', 'Ашан Флай', 'Флай Сибирь', 'Флай Импорт',
-                    'Филье', 'Хладокомбинат', 'РПК', 'ЭЛМ Строй']
-    for i in range(len(parameters_org)):
-        entity_list = []
-        for field_name, field_link in parameters_org[i].items():
-            entity_list.append(bool(field_link[0].get()))
-        entity[entity_names[i]] = entity_list
-    length = len(entity['Ашан'])
-    flow_groups = []
-
-    for i in range(length):
-        flow_list = []
-        for j in list(entity.keys()):
-            flow_list.append(entity[j][i])
-        flow_groups.append(flow_list)
-    return flow_groups
+    print(data_all)
 
 
 # Запрос guid по API
@@ -337,7 +288,9 @@ def trace_to_headoff(*args):
     clean_guid(index)
 
 
-# Отслеживание combobox
+##### TESTs #####
+
+
 def selected(*args):
     i = root.focus_get()
     try:
@@ -348,7 +301,6 @@ def selected(*args):
     ins_prov_name(index)
 
 
-# Установка наименования провайдера
 def ins_prov_name(index):
     prefix = data_compbox_guid[f'guid{index}'][1].get()[0:3]
     for i in provider_no_list:
@@ -356,7 +308,6 @@ def ins_prov_name(index):
             data_provider_name[f'prov_name{index}'].configure(text=f'{i[2]}', foreground='green', anchor=NW)
 
 
-##### TESTs #####
 def to_click():
     print(data_compbox_guid['guid0'][1].get())
 

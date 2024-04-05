@@ -2,14 +2,13 @@ import http.client
 import json
 import http.client
 from decouple import config
-import mimetypes
-from codecs import encode
 
 
 ddauth_api_client_id = config('ddauth_api_client_id', default='')
 Gravitee_Api_Key = config('X-Gravitee-Api-Key', default='')
 login = config('login', default='')
 password = config('password', default='')
+
 
 def authorization():
   conn = http.client.HTTPSConnection("api-ext.ru.auchan.com")

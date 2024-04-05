@@ -1,19 +1,5 @@
-def show_flows(data):
-     entity_names = ['Ашан', 'Атак', 'Ашан Тех', 'Ашан Флай', 'Флай Сибирь', 'Флай Импорт',
-                     'Филье', 'Хладокомбинат', 'РПК', 'ЭЛМ Строй']
-     select_flows = []
-     for i in data:
-          res = [i[0]]
-          flow_group = i[-1]
-          for j in range(len(flow_group)):
-               if flow_group[j] is True:
-                    res.append(entity_names[j])
-          select_flows.append(res)
-          print(res)
-     return select_flows
+# ВАЖНО! Должна быть проверка по недопущению дублей, придумать selectЫ
 
-
-def preparing_data(data):
-     for i in data:
-         flow_gtoup = i[-1]
-
+def preparig_data_to_record(data):
+    for i in data:
+        print(i)

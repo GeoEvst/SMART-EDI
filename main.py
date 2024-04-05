@@ -1,4 +1,4 @@
-import copy
+import json
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
@@ -31,6 +31,12 @@ v.grid(column=1, row=0, sticky=(N,S))
 
 
 # Объявление списков хранящие объекты виджетов
+global first_get_all
+first_get_all = True
+global final_data_to_record
+global data_all
+final_data_to_record = []
+data_all = []
 data_field_lable = {}
 data_field_title = {}
 data_field_inn = {}
@@ -77,6 +83,7 @@ def open_file():
             csvfile.close()
     canvas.create_window(10, y + 10, anchor=NW, window=request_guid)
     canvas.create_window(110, y + 10, anchor=NW, window=get_all)
+    canvas.create_window(235, y + 10, anchor=NW, window=record)
     open_file_btn.configure(state='disabled')
 
 
@@ -159,41 +166,84 @@ def formation_of_fields(parse_file):
 
 # Получение всего что есть в список
 def get_all():
-    data_all = []
-    data_title_list = []
-    data_inn_list = []
-    data_kpp_list = []
-    data_gln_list = []
-    data_field_is_active_ka_list = []
-    data_field_is_headoff_list = []
-    data_field_guid_list = []
+    global first_get_all
+    global final_data_to_record
     data_compbox_guid_list = []
-    cnt = 0
-    for field_name, field_link in data_field_title.items():
-        cnt += 1
-        data_title_list.append(field_link.get())
-    for field_name, field_link in data_field_inn.items():
-        data_inn_list.append(field_link.get())
-    for field_name, field_link in data_field_kpp.items():
-        data_kpp_list.append(field_link.get())
-    for field_name, field_link in data_field_gln.items():
-        data_gln_list.append(field_link.get())
-    for field_name, field_link in data_field_is_active_ka.items():
-        data_field_is_active_ka_list.append(not bool(field_link[0].get()))
-    for field_name, field_link in data_field_is_headoff.items():
-        data_field_is_headoff_list.append(bool(field_link[0].get()))
-    for field_name, field_link in data_field_guid.items():
-        data_field_guid_list.append(field_link.get())
+    if first_get_all is True:
+        flow_groups = {}
+        data_title_list = []
+        data_inn_list = []
+        data_kpp_list = []
+        data_gln_list = []
+        data_field_is_active_ka_list = []
+        data_field_is_headoff_list = []
+        data_field_guid_list = []
+        cnt = 0
+        for field_name, field_link in data_field_title.items():
+            cnt += 1
+            data_title_list.append(field_link.get())
+        for field_name, field_link in data_field_inn.items():
+            data_inn_list.append(field_link.get())
+        for field_name, field_link in data_field_kpp.items():
+            data_kpp_list.append(field_link.get())
+        for field_name, field_link in data_field_gln.items():
+            data_gln_list.append(field_link.get())
+        for field_name, field_link in data_field_is_active_ka.items():
+            data_field_is_active_ka_list.append(not bool(field_link[0].get()))
+        for field_name, field_link in data_field_is_headoff.items():
+            data_field_is_headoff_list.append(bool(field_link[0].get()))
+        # for field_name, field_link in data_field_guid.items():
+        #     data_field_guid_list.append(field_link.get())
+        for i in range(cnt):
+            data_all.append([data_title_list[i], data_inn_list[i], data_kpp_list[i], data_gln_list[i],
+                             data_field_is_active_ka_list[i], data_field_is_headoff_list[i]])
+            first_get_all = False
     for field_name, field_link in data_compbox_guid.items():
         data_compbox_guid_list.append(field_link[0].get())
-    for i in range(cnt):
-        data_all.append([data_title_list[i], data_inn_list[i], data_kpp_list[i], data_gln_list[i],
-                         data_field_is_active_ka_list[i], data_field_is_headoff_list[i], data_compbox_guid_list[i]])
-
     flow_groups = get_flows()
-    for i in range(len(data_all)):
-        data_all[i].append(flow_groups[i])
-    connect_db.show_flows(data_all)
+    for i in range(len(data_compbox_guid_list)):
+        flow_group_dict = {}
+        flow_group_dict[data_compbox_guid_list[i]] = flow_groups[i]
+        data_all[i].append(flow_group_dict)
+    final_data_to_record = prepare_flows(data_all)
+    record.configure(state='enabled')
+
+
+# Дичь
+def to_record():
+    entity_names = ['Ашан', 'Атак', 'Ашан Тех', 'Ашан Флай', 'Флай Сибирь', 'Флай Импорт',
+                    'Филье', 'Хладокомбинат', 'РПК', 'ЭЛМ Строй']
+    record.configure(state='disabled')
+    get_all.configure(state='disabled')
+    request_guid.configure(state='disabled')
+    info = []
+    errors = []
+    errors_str = ''
+    info_str = 'Для записи будут добавлены следующие группы потоков \n'
+    for i in range(len(final_data_to_record)):
+        info.append([final_data_to_record[i][0]])
+        for j in final_data_to_record[i][-1]:
+            for guid, flows in j.items():
+                for k in range(len(flows)):
+                    if flows[k] is True:
+                        info[i].append([entity_names[k], guid])
+    for i in range(len(info)):
+        errors.append([info[i][0]])
+        for j in range(1, len(info[i])):
+            if len(errors[i]) == 1:
+                errors[i].append([])
+            errors[i][1].append(info[i][j][0])
+    for i in errors:
+        if len(i) > 1 and i[1] != list(set(i[1])):
+            errors_str += str(i) + '\n'
+    if errors_str != '':
+        showinfo('Ошибка', f'Попытка добавить несколько GUID для одного юр. лица АРР \n {errors_str}')
+        return False
+    for i in info:
+        info_str += str(i) + '\n'
+    askyesno('Подтверждение операции', info_str)
+    # connect_db.preparig_data_to_record(final_data_to_record)
+
 
 
 def get_flows():
@@ -217,9 +267,25 @@ def get_flows():
     return flow_groups
 
 
+def prepare_flows(data):
+    guid_to_record = []
+    data_to_record = []
+    for i in data:
+        dedupped = [json.loads(i) for i in set(json.dumps(item, sort_keys=True) for item in i[6:])]
+        guid_to_record.append(dedupped)
+    for i in range(len(data)):
+        data_to_record.append(data[i][:6])
+        data_to_record[i].append(guid_to_record[i])
+    return data_to_record
+
 
 # Запрос guid по API
 def request_guid():
+    global final_data_to_record
+    global data_all
+    final_data_to_record = []
+    data_all = []
+
     if is_second_validate() is False:
         view_errors()
         return False
@@ -358,7 +424,7 @@ def ins_prov_name(index):
 
 
 def to_click():
-    print(data_compbox_guid['guid0'][1].get())
+    print(final_data_to_record)
 
 
 click = ttk.Button(text="click", command=to_click)
@@ -380,8 +446,10 @@ open_file_btn = ttk.Button(text="Открыть файл", command=open_file)
 canvas.create_window(10, 20, anchor=NW, window=open_file_btn)
 
 request_guid = ttk.Button(root, text="Получить GUID", command=request_guid)
-get_all = ttk.Button(root, text="Получить данные", command=get_all)
+get_all = ttk.Button(root, text="Добавить к загрузке", command=get_all)
 get_all.configure(state='disabled')
+record = ttk.Button(root, text="Записать", command=to_record)
+record.configure(state='disabled')
 
 # data_field_is_headoff['is_headoff1'][0].trace(mode='w', callback=trace_to_headoff)
 

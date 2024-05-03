@@ -88,6 +88,7 @@ def search_api_ka(data_all):
     else:
       guid_ka_list.append('')
   return guid_ka_list
+print (search_api_ka)
 
 
 def search_api_kas(data_all):
@@ -95,6 +96,7 @@ def search_api_kas(data_all):
   for i in data_all:
     guid_ka = []
     result = get_organization(token, i[0], i[1])
+    print (result)
     for i in range(len(result['Organizations'])):
       guid_ka.append(result['Organizations'][i]['FnsParticipantId'])
     guid_ka_list.append(guid_ka)

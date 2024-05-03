@@ -10,6 +10,10 @@ import sys
 import os
 import api_kontur
 import connect_db
+from connect_db import con
+from connect_db import insert_flow_groups
+import time
+
 
 # Параметры окна
 root = Tk()
@@ -244,6 +248,14 @@ def to_record():
         info_str += '-' * 50 + '\n'
     askyesno('Подтверждение операции', info_str)
     connect_db.preparig_data_to_record(final_data_to_record)
+    # Никитин: добавил вызов функции записи в БД (первая функция обновляет GUID, вторая записывает настройки потоков)
+
+    connect_db.insert_changed_data(con, final_data_to_record)
+    x = connect_db.insert_changed_data(con, final_data_to_record)
+    if x is True:
+        connect_db.insert_flow_groups(con, final_data_to_record)
+
+
 
 
 def get_flows():
@@ -298,6 +310,7 @@ def request_guid():
         data_kpp.append(field_link.get())
     for i in range(len(data_inn)):
         data_inn_kpp.append([data_inn[i], data_kpp[i]])
+    # print (data_inn)
     res = api_kontur.search_api_kas(data_inn_kpp)
     for i in range(len(res)):
         data_compbox_guid[f'guid{i}'][1]['values'] = res[i]

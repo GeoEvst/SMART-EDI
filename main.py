@@ -10,9 +10,8 @@ import sys
 import os
 import api_kontur
 import connect_db
-from connect_db import con
+# from connect_db import con
 from connect_db import insert_flow_groups
-import time
 
 
 # Параметры окна
@@ -250,10 +249,10 @@ def to_record():
     connect_db.preparig_data_to_record(final_data_to_record)
     # Никитин: добавил вызов функции записи в БД (первая функция обновляет GUID, вторая записывает настройки потоков)
 
-    connect_db.insert_changed_data(con, final_data_to_record)
-    x = connect_db.insert_changed_data(con, final_data_to_record)
+    connect_db.insert_changed_data(connect_db.con, final_data_to_record)
+    x = connect_db.insert_changed_data(connect_db.con, final_data_to_record)
     if x is True:
-        connect_db.insert_flow_groups(con, final_data_to_record)
+        connect_db.insert_flow_groups(connect_db.con, final_data_to_record)
 
 
 

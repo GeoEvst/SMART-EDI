@@ -77,9 +77,10 @@ def open_file():
     parse_file = []
     filepath = filedialog.askopenfilename()
     if filepath != "":
-        with open(filepath, "r") as csvfile:
+        with open(filepath, "r", encoding='windows-1251') as csvfile:
             csvreader = csv.reader(csvfile)
             for i in csvreader:
+                print(i)
                 parse_file.append(i[0].split(';'))
             parse_file = parse_file[1:]
             y = formation_of_fields(parse_file)
@@ -119,7 +120,7 @@ def display_to_compbox(name, x, y):
 
 # Вывод label
 def display_to_label(name, x, y):
-    compbox_name = ttk.Label(text=name[:-1], background='white')
+    compbox_name = ttk.Label(text='Провайдер не определен', background='white')
     canvas.create_window(x, y - 20, window=compbox_name)
     result = compbox_name
     return result
@@ -431,8 +432,10 @@ def selected(*args):
 def ins_prov_name(index):
     prefix = data_compbox_guid[f'guid{index}'][1].get()[0:3]
     for i in provider_no_list:
-        if prefix == i[1]:
+        if prefix == i[1].lower() or prefix == i[1]:
             data_provider_name[f'prov_name{index}'].configure(text=f'{i[2]}', foreground='green', anchor=NW)
+            return
+    data_provider_name[f'prov_name{index}'].configure(text=f'Провайдер не определен', foreground='black', anchor=NW)
 
 
 def to_click():

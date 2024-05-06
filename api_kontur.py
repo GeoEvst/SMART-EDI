@@ -10,48 +10,48 @@ login = config('login', default='')
 password = config('password', default='')
 
 
-def authorization():
-  conn = http.client.HTTPSConnection("api-ext.ru.auchan.com")
-  payload = json.dumps({
-    "Login": login,
-    "Password": password
-  })
-  headers = {
-    'Content-Type': 'application/json',
-    'Authorization': f'DiadocAuth ddauth_api_client_id={ddauth_api_client_id}',
-    'X-Gravitee-Api-Key': Gravitee_Api_Key
-  }
-  conn.request("POST", "/edi/diadoc-out/v1/V3/Authenticate?type=password", payload, headers)
-  res = conn.getresponse()
-  data = res.read()
-  token = data.decode("utf-8")
-  return token
+# def authorization():
+#   conn = http.client.HTTPSConnection("api-ext.ru.auchan.com")
+#   payload = json.dumps({
+#     "Login": login,
+#     "Password": password
+#   })
+#   headers = {
+#     'Content-Type': 'application/json',
+#     'Authorization': f'DiadocAuth ddauth_api_client_id={ddauth_api_client_id}',
+#     'X-Gravitee-Api-Key': Gravitee_Api_Key
+#   }
+#   conn.request("POST", "/edi/diadoc-out/v1/V3/Authenticate?type=password", payload, headers)
+#   res = conn.getresponse()
+#   data = res.read()
+#   token = data.decode("utf-8")
+#   return token
 
 # x = authorization()
 # print(x)
 token = ''
 
 
-def get_to_counteragents(token, afterIndexKey = ''):
-  conn = http.client.HTTPSConnection("api-ext.ru.auchan.com")
-  boundary = ''
-  payload = ''
-  headers = {
-    'Authorization': f'DiadocAuth ddauth_api_client_id={ddauth_api_client_id}, ddauth_token={token}',
-    'Accept': 'application/json',
-    'Content-Type': 'application/json; charset=utf-8',
-    'X-Gravitee-Api-Key': Gravitee_Api_Key,
-    'Content-type': 'multipart/form-data; boundary={}'.format(boundary)
-  }
-  conn.request("GET", f"/edi/diadoc-out/v1/V2/GetCounteragents?myOrgId=13f51fdb-ee1e-43a8-bfd7-667f34b23246&counteragentStatus=IsMyCounteragent&afterIndexKey={afterIndexKey}", payload, headers)
-  res = conn.getresponse()
-  data = res.read()
-  json_data = json.loads(data.decode("utf-8"))
-
-  result = {}
-  for i in json_data['Counteragents']:
-    result[i['Organization']['Inn']] = ([i['Organization']['Inn'], i['Organization']['ShortName'], i['Organization']['Kpp'], i['Organization']['FnsParticipantId']])
-  return result, i['IndexKey']
+# def get_to_counteragents(token, afterIndexKey = ''):
+#   conn = http.client.HTTPSConnection("api-ext.ru.auchan.com")
+#   boundary = ''
+#   payload = ''
+#   headers = {
+#     'Authorization': f'DiadocAuth ddauth_api_client_id={ddauth_api_client_id}, ddauth_token={token}',
+#     'Accept': 'application/json',
+#     'Content-Type': 'application/json; charset=utf-8',
+#     'X-Gravitee-Api-Key': Gravitee_Api_Key,
+#     'Content-type': 'multipart/form-data; boundary={}'.format(boundary)
+#   }
+#   conn.request("GET", f"/edi/diadoc-out/v1/V2/GetCounteragents?myOrgId=13f51fdb-ee1e-43a8-bfd7-667f34b23246&counteragentStatus=IsMyCounteragent&afterIndexKey={afterIndexKey}", payload, headers)
+#   res = conn.getresponse()
+#   data = res.read()
+#   json_data = json.loads(data.decode("utf-8"))
+#
+#   result = {}
+#   for i in json_data['Counteragents']:
+#     result[i['Organization']['Inn']] = ([i['Organization']['Inn'], i['Organization']['ShortName'], i['Organization']['Kpp'], i['Organization']['FnsParticipantId']])
+#   return result, i['IndexKey']
 
 
 def get_organization(token, inn, kpp=''):

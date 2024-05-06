@@ -25,6 +25,7 @@ def preparig_data_to_record(data):
     select_list = []
     result = []
     for i in data:
+        print(i)
         inn = i[1]
         is_active = i[4]
         is_headoff = i[5]
@@ -34,8 +35,8 @@ def preparig_data_to_record(data):
     for i in select_list:
         cur.execute(i)
         result.append(cur.fetchall())
-    for i in result:
-        print(i)
+    # for i in result:
+    #     print(i)
 
 
 

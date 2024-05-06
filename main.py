@@ -76,15 +76,24 @@ def open_file():
     clear_space()
     parse_file = []
     filepath = filedialog.askopenfilename()
+    # if filepath != "":
+    #     with open(filepath, "r", encoding='UTF-8') as csvfile:
+    #         csvreader = csv.reader(csvfile)
+    #         for i in csvreader:
+    #             print(i)
+    #             parse_file.append(row)
+    #             parse_file.append(i[0].split(','))
+    #         parse_file = parse_file[1:]
+    #         y = formation_of_fields(parse_file)
+    #         csvfile.close()
     if filepath != "":
-        with open(filepath, "r", encoding='windows-1251') as csvfile:
+        with open(filepath, "r", encoding='UTF-8') as csvfile:
             csvreader = csv.reader(csvfile)
-            for i in csvreader:
-                print(i)
-                parse_file.append(i[0].split(';'))
-            parse_file = parse_file[1:]
-            y = formation_of_fields(parse_file)
+            next(csvreader)  # Пропускаем заголовок, если он есть
+            for row in csvreader:
+                parse_file.append(row)
             csvfile.close()
+    y = formation_of_fields(parse_file)
     canvas.create_window(10, y + 10, anchor=NW, window=request_guid)
     canvas.create_window(110, y + 10, anchor=NW, window=get_all)
     canvas.create_window(235, y + 10, anchor=NW, window=record)
